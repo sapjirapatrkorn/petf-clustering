@@ -1,16 +1,9 @@
 # pscore-kmeans
 
-K-Means clustering (K = 3) for one-dimensional pscore data, with a
-reproducibility-focused workflow: a search script that finds the best random
-seed against a target threshold rule, and a runner script that applies the
-chosen seed to any compatible input file.
-
-The repository contains two scripts:
-
-| Script             | Purpose                                                              |
-|--------------------|----------------------------------------------------------------------|
-| `kmeans_search.py` | Sweep random seeds (0–199) and report the one that best matches the target boundaries. |
-| `run_kmeans.py`    | Run K-Means with the fixed seed (`12`) on any input file and produce outputs. |
+K-Means clustering (K = 3) for one-dimensional pscore data, with a fixed
+random seed for reproducibility. Reads a two-column Excel file, assigns each
+term to one of three clusters, and writes a labeled spreadsheet plus a
+visualization.
 
 ---
 
@@ -26,9 +19,10 @@ cluster Low  :              value <  0.249
 ```
 
 Standard K-Means partitions by distance to centroids rather than by fixed
-thresholds, so the assignment depends on initialization. `kmeans_search.py`
-sweeps random seeds and ranks them by point-wise agreement with the target
-rule; `run_kmeans.py` then applies the chosen seed deterministically.
+thresholds, so the assignment depends on initialization. The seed `12` was
+selected (via an offline sweep over seeds 0–199) as the value that best
+agrees with the target rule on the reference dataset, and is hard-coded in
+the script for deterministic re-runs.
 
 ---
 
@@ -60,30 +54,6 @@ Rows with non-numeric or missing pscore values are dropped automatically.
 
 ## Usage
 
-### 1. Find the best random seed (one-time)
-
-```bash
-python kmeans_search.py
-```
-
-The script reads a hard-coded path to the reference dataset and prints the
-best seed found. With the bundled data, the result is:
-
-```
-Best random seed       : 12
-Accuracy vs target rule: 98.91%
-Sorted centroids       : [0.1802 0.5037 1.0000]
-```
-
-Outputs:
-
-- `kmeans_clusters.xlsx` — original data with cluster labels
-- `kmeans_clusters.png`  — 2-panel visualization
-
-To sweep a wider range, edit the line `range(200)` in the script.
-
-### 2. Run K-Means with the fixed seed on any file
-
 ```bash
 python run_kmeans.py <input_file.xlsx> [--outdir OUTDIR]
 ```
@@ -108,10 +78,10 @@ Outputs (written to `--outdir`, default `.`):
 
 The original two columns plus:
 
-| column        | description                              |
-|---------------|------------------------------------------|
-| `cluster`     | integer label: 0 = Low, 1 = Mid, 2 = High |
-| `cluster_name`| human-readable label                     |
+| column         | description                               |
+|----------------|-------------------------------------------|
+| `cluster`      | integer label: 0 = Low, 1 = Mid, 2 = High |
+| `cluster_name` | human-readable label                      |
 
 Cluster IDs are remapped after K-Means so that 0/1/2 always correspond to
 ascending centroid value, regardless of the underlying scikit-learn output.
@@ -127,8 +97,7 @@ Two panels:
 
 ## Reference results
 
-Running `run_kmeans.py` on `raw-data-pscore-10Y.xlsx` (92 rows) with
-`seed = 12` produces:
+Running on `raw-data-pscore-10Y.xlsx` (92 rows) with `seed = 12` produces:
 
 | cluster | range          | n  |
 |---------|----------------|----|
@@ -147,8 +116,7 @@ boundary at the midpoint between the Low and Mid centroids, ≈ 0.34).
 ```
 pscore-kmeans/
 ├── README.md
-├── kmeans_search.py          # seed-search script
-├── run_kmeans.py             # fixed-seed runner
+├── run_kmeans.py
 └── data/
     └── raw-data-pscore-10Y.xlsx   # example input (optional)
 ```
@@ -157,9 +125,9 @@ pscore-kmeans/
 
 ## Reproducibility notes
 
-- `random_state = 12` and `n_init = 10` are fixed in both scripts. With the same scikit-learn version, results are identical across runs.
+- `random_state = 12` and `n_init = 10` are fixed in the script. With the same scikit-learn version, results are identical across runs.
 - Cluster labels are remapped by centroid order (low → mid → high), so they remain stable even if scikit-learn returns clusters in a different order across versions.
-- Different input distributions may not match the target rule as closely as the reference dataset. Re-run `kmeans_search.py` if the agreement drops materially on a new dataset.
+- Different input distributions may not match the target rule as closely as the reference dataset. If agreement drops materially on a new dataset, the seed may need to be re-tuned.
 
 ---
 
