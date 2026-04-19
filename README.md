@@ -114,7 +114,7 @@ boundary at the midpoint between the Low and Mid centroids, ≈ 0.34).
 ## Repository layout
 
 ```
-pscore-kmeans/
+petf-clustering/
 ├── README.md
 ├── run_kmeans.py
 └── data/
