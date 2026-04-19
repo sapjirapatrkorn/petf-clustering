@@ -61,8 +61,8 @@ python run_kmeans.py <input_file.xlsx> [--outdir OUTDIR]
 Examples:
 
 ```bash
-python run_kmeans.py raw-data-pscore-10Y.xlsx
-python run_kmeans.py data/2024-pscore.xlsx --outdir results/
+python run_kmeans.py data/raw-data-pscore-10Y.xlsx
+python run_kmeans.py data/raw-data-pscore-10Y.xlsx --outdir results/
 ```
 
 Outputs (written to `--outdir`, default `.`):
